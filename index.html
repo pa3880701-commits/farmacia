@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Estoque - Farmácia</title>
+  <style>
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #4CAF50, #81C784, #A5D6A7);
+      color: #333;
+      min-height: 100vh;
+    }
+
+    header {
+      background: rgba(0,0,0,0.6);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #2E7D32;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      background: #2E7D32;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #1B5E20;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #2E7D32;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      th {
+        display: none;
+      }
+      td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
+      }
+      td::before {
+        position: absolute;
+        left: 10px;
+        font-weight: bold;
+        color: #2E7D32;
+        content: attr(data-label);
+      }
+    }
+      footer {
+      background: #4CAF50; color: white; text-align:center; padding:14px 0; margin-top:30px;
+      border-top-left-radius:12px; border-top-right-radius:12px;
+    }
+    footer p { font-size:14px; margin:0; }
+
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💊 Sistema de Estoque - Farmácia</h1>
+  </header>
+
+  <main>
+   
+    <div class="card">
+      <h2>Cadastro de Medicamentos (Administrador)</h2>
+      <label for="senhaAdmin">Senha do Administrador:</label>
+      <input type="password" id="senhaAdmin">
+      <label for="nome">Nome do Medicamento:</label>
+      <input type="text" id="nome">
+      <label for="preco">Preço:</label>
+      <input type="number" id="preco" step="0.01">
+      <label for="quantidade">Quantidade:</label>
+      <input type="number" id="quantidade">
+      <button onclick="cadastrar()">Cadastrar</button>
+    </div>
+
+    
+    <div class="card">
+      <h2>Consultar Medicamento</h2>
+      <label for="consultaNome">Nome:</label>
+      <input type="text" id="consultaNome">
+      <button onclick="consultar()">Consultar</button>
+      <p id="resultadoConsulta"></p>
+    </div>
+
+    
+    <div class="card">
+      <h2>Ver Estoque Atual</h2>
+      <label for="estoqueNome">Nome:</label>
+      <input type="text" id="estoqueNome">
+      <button onclick="mostrarEstoque()">Mostrar Estoque</button>
+      <p id="resultadoEstoque"></p>
+    </div>
+
+    
+    <div class="card">
+      <h2>Compra de Medicamentos (Cliente)</h2>
+      <label for="compraNome">Nome do Medicamento:</label>
+      <input type="text" id="compraNome">
+      <label for="compraQuantidade">Quantidade:</label>
+      <input type="number" id="compraQuantidade">
+      <button onclick="comprar()">Comprar</button>
+      <p id="resultadoCompra"></p>
+    </div>
+
+    <!-- Listagem -->
+    <div class="card">
+      <h2>Medicamentos em Estoque</h2>
+      <table id="tabelaEstoque">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Preço</th>
+            <th>Quantidade</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    let estoque = {};
+    const senhaCorreta = "paulo123"; // senha do administrador
+
+    function cadastrar() {
+      const senha = document.getElementById("senhaAdmin").value;
+      if (senha !== senhaCorreta) {
+        alert("Senha incorreta! Apenas administradores podem cadastrar medicamentos.");
+        return;
+      }
+
+      const nome = document.getElementById("nome").value.trim();
+      const preco = parseFloat(document.getElementById("preco").value);
+      const quantidade = parseInt(document.getElementById("quantidade").value);
+
+      if (!nome || isNaN(preco) || isNaN(quantidade)) {
+        alert("Preencha todos os campos corretamente!");
+        return;
+      }
+
+      estoque[nome] = { preco, quantidade };
+      alert(`Medicamento ${nome} cadastrado com sucesso!`);
+      atualizarTabela();
+    }
+
+    function consultar() {
+      const nome = document.getElementById("consultaNome").value.trim();
+      const resultado = document.getElementById("resultadoConsulta");
+
+      if (estoque[nome]) {
+        resultado.textContent = `${nome} - Preço: ${estoque[nome].preco.toFixed(2)} Kz | Quantidade: ${estoque[nome].quantidade}`;
+      } else {
+        resultado.textContent = "Medicamento não encontrado.";
+      }
+    }
+
+    function mostrarEstoque() {
+      const nome = document.getElementById("estoqueNome").value.trim();
+      const resultado = document.getElementById("resultadoEstoque");
+
+      if (estoque[nome]) {
+        resultado.textContent = `Estoque atual de ${nome}: ${estoque[nome].quantidade} unidades`;
+      } else {
+        resultado.textContent = "Medicamento não encontrado.";
+      }
+    }
+
+    function comprar() {
+      const nome = document.getElementById("compraNome").value.trim();
+      const quantidadeCompra = parseInt(document.getElementById("compraQuantidade").value);
+      const resultado = document.getElementById("resultadoCompra");
+
+      if (estoque[nome]) {
+        if (quantidadeCompra > 0 && quantidadeCompra <= estoque[nome].quantidade) {
+          estoque[nome].quantidade -= quantidadeCompra;
+          resultado.textContent = `Compra realizada: ${quantidadeCompra} unidade(s) de ${nome}. Estoque restante: ${estoque[nome].quantidade}`;
+          atualizarTabela();
+        } else {
+          resultado.textContent = "Quantidade inválida ou estoque insuficiente.";
+        }
+      } else {
+        resultado.textContent = "Medicamento não encontrado.";
+      }
+    }
+
+    function atualizarTabela() {
+      const tbody = document.querySelector("#tabelaEstoque tbody");
+      tbody.innerHTML = "";
+
+      for (let nome in estoque) {
+        const dados = estoque[nome];
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td data-label="Nome">${nome}</td>
+          <td data-label="Preço">${dados.preco.toFixed(2)} Kz</td>
+          <td data-label="Quantidade">${dados.quantidade}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+  </script>
+
+  <footer>
+    <p>&reg; 2026 Gerenciador de fármacos, excelência e segurança</p>
+  </footer>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
